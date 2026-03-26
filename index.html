@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compléments des Puissances de 10 | PLAI</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --dark:#1e1b4b;--pink:#ec4899;--bg:#f5f5ff;--r:10px;--sh:0 2px 12px rgba(30,27,75,.1);
+  --c0:#ec4899;--c1:#d97706;--c2:#059669;--c3:#0891b2;--c4:#2563eb;--c5:#7c3aed;
+  --cm1:#f59e0b;--cm2:#10b981;--cm3:#6366f1;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:Arial,sans-serif;background:var(--bg);display:flex;flex-direction:column}
+
+/* HEADER */
+header{background:var(--dark);padding:8px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+header img{height:40px}
+header h1{color:#fff;font-size:1rem;flex:1}
+.btn-t{background:transparent;border:2px solid var(--pink);color:var(--pink);padding:5px 12px;border-radius:20px;cursor:pointer;font-size:.8rem}
+.btn-t:hover{background:var(--pink);color:#fff}
+
+/* TEACHER PANEL */
+.t-panel{display:none;background:#fff;border-bottom:2px solid var(--pink);padding:12px 18px;flex-shrink:0}
+.t-panel.open{display:block}
+.t-inner{max-width:900px;margin:0 auto}
+.t-panel h2{color:var(--dark);font-size:.9rem;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.fg label{font-size:.78rem;color:#6b7280;display:block;margin-bottom:3px}
+.fg select,.fg input[type=number]{width:100%;padding:6px;border:2px solid #e5e7eb;border-radius:7px;font-size:.85rem}
+.sci-note{font-size:.74rem;color:#5b21b6;border-left:3px solid #8b5cf6;padding-left:8px;margin-bottom:5px;line-height:1.45}
+.t-btns{display:flex;gap:8px;margin-top:8px}
+.btn-gen{background:var(--pink);color:#fff;border:none;padding:6px 16px;border-radius:20px;cursor:pointer;font-size:.82rem}
+.btn-so{background:transparent;border:2px solid #e5e7eb;padding:6px 16px;border-radius:20px;cursor:pointer;font-size:.82rem}
+
+/* MAIN 2-COL */
+.main{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px;overflow:hidden;max-width:1100px;margin:0 auto;width:100%}
+
+/* LEFT */
+.left{display:flex;flex-direction:column;gap:8px;overflow:hidden}
+
+.controls{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0}
+.ctrl-label{font-size:1rem;color:#6b7280;font-weight:700}
+.ctrl-sel{font-size:1.05rem;padding:7px 12px;border:2px solid #e5e7eb;border-radius:7px;color:var(--dark);font-weight:700}
+.ctrl-sel:focus{outline:none;border-color:var(--pink)}
+.ctrl-toggle{display:flex;align-items:center;gap:8px;font-size:1rem;cursor:pointer;color:var(--dark)}
+.ctrl-toggle input{accent-color:var(--pink);width:18px;height:18px}
+.btn-new{background:var(--dark);color:#fff;border:none;padding:9px 20px;border-radius:20px;font-size:1rem;cursor:pointer;font-weight:700}
+.btn-new:hover{background:var(--pink)}
+
+.abaque-wrap{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:18px 12px 14px;flex:1;display:flex;flex-direction:column;overflow:hidden;align-items:center;justify-content:center;gap:10px}
+.abaque-title{color:#9ca3af;font-size:.95rem;font-weight:700;text-align:center}
+.abaque{display:flex;gap:10px;justify-content:center;align-items:flex-end;overflow-x:auto;padding:6px 4px;width:100%}
+.col{text-align:center;min-width:72px;flex-shrink:0}
+.col-pow{font-size:1.05rem;margin-bottom:5px;font-weight:700}
+.col-pow sup{font-size:.85em}
+.col-digit{font-size:3rem;font-weight:900;padding:12px 10px;border-radius:8px;margin-bottom:5px;color:white;line-height:1}
+.col-op{font-size:1.3rem;font-weight:700;padding:5px 8px;border-radius:6px 6px 0 0;background:#fff3cd;color:#92400e;border:1px solid #fde68a;border-bottom:none;white-space:nowrap}
+.col-target{font-size:1.3rem;font-weight:700;padding:5px 8px;border-radius:0 0 6px 6px;background:#fff3cd;color:#92400e;border:1px solid #fde68a;border-top:2px solid #d97706;white-space:nowrap}
+.col-answer{font-size:1.3rem;font-weight:900;padding:5px 8px;border-radius:6px 6px 0 0;color:white;background:var(--pink);border:1px solid var(--pink);border-bottom:none;white-space:nowrap}
+.virgule{font-size:3.2rem;color:#e74c3c;font-weight:900;padding-bottom:12px;align-self:flex-end}
+
+/* EXEMPLE (zone gauche optionnel) */
+.enonce-box.with-ex{justify-content:flex-start;padding-top:16px;gap:10px}
+.ex-wrap{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:20px;margin-top:100px;border-top:2px dashed #e5e7eb}
+.ex-label{font-size:1.1rem;color:#6b7280;font-weight:700;text-align:center;margin-bottom:4px}
+.ex-result{font-size:1.1rem;font-weight:700;color:var(--dark);text-align:center}
+.ex-result span{color:var(--pink);font-size:1.4rem;font-weight:900}
+
+/* RIGHT */
+.right{display:flex;flex-direction:column;gap:8px;overflow:hidden}
+
+.score-bar{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:8px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.score-bar span{color:#6b7280;font-size:1rem}
+#scoreNums{font-size:1.4rem;font-weight:700;color:var(--dark)}
+#progressBar{flex:1;height:9px;border-radius:4px;accent-color:var(--pink)}
+
+/* ENONCE (gauche) */
+.enonce-box{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;flex:1}
+.q-label{color:#6b7280;font-size:1.1rem;font-weight:600;text-align:center}
+.q-target{font-size:1.5rem;font-weight:700;color:var(--dark);text-align:center;background:#f0f0ff;border-radius:8px;padding:10px 26px;border:2px solid #c7d2fe}
+.q-target span{color:var(--pink)}
+.q-number{font-size:5rem;font-weight:900;color:var(--dark);line-height:1;text-align:center}
+
+/* SAISIE (droite bas) */
+.ans-box{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:12px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}
+.q-arrow{font-size:1.5rem;color:var(--pink)}
+.ans-display{font-size:2rem;font-weight:700;color:var(--dark);min-width:200px;height:54px;border:2px solid #e5e7eb;border-radius:9px;padding:6px 14px;text-align:center;background:#f9fafb;letter-spacing:2px}
+.ans-display.active{border-color:var(--pink)}
+
+.vkb{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;width:100%;max-width:320px}
+.kb{height:54px;font-size:1.25rem;font-weight:700;border:none;border-radius:7px;background:#f3f4f6;color:var(--dark);cursor:pointer;transition:.12s}
+.kb:active{transform:scale(.95)}
+.kb.sp{background:var(--dark);color:#fff}
+.kb.ok{grid-column:span 2;background:var(--pink);color:#fff}
+.kb.cl{background:#fee2e2;color:#dc2626}
+
+.fb{padding:10px 14px;border-radius:7px;font-size:1.1rem;font-weight:700;text-align:center;width:100%;max-width:320px}
+.fb.ok{background:#dcfce7;color:#166534}
+.fb.ko{background:#fee2e2;color:#991b1b}
+.fb.neutral{background:#f3f4f6;color:#6b7280}
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:#fff;border-radius:var(--r);padding:22px;width:320px;max-width:92vw}
+.modal h2{color:var(--dark);margin-bottom:14px;font-size:.95rem}
+.modal input{width:100%;padding:8px;border:2px solid #e5e7eb;border-radius:7px;margin-bottom:8px;font-size:.9rem}
+.modal input:focus{outline:none;border-color:var(--pink)}
+.m-err{color:#dc2626;font-size:.78rem;margin-bottom:6px;min-height:16px}
+.m-btns{display:flex;gap:8px;justify-content:flex-end}
+.btn-cl{background:#f3f4f6;border:none;padding:6px 16px;border-radius:20px;cursor:pointer;font-size:.85rem}
+.btn-ok{background:var(--pink);color:#fff;border:none;padding:6px 16px;border-radius:20px;cursor:pointer;font-size:.85rem}
+</style>
+</head>
+<body>
+
+<header>
+  <img src="PLAI.jpg" alt="Logo PLAI">
+  <h1>Compléments des Puissances de 10</h1>
+  <button class="btn-t" onclick="openLogin()">Mode Enseignant</button>
+</header>
+
+<!-- TEACHER PANEL -->
+<div class="t-panel" id="tPanel">
+  <div class="t-inner">
+    <h2>Mode Enseignant <button class="btn-so" onclick="doSignOut()">Déconnexion</button></h2>
+    <div class="t-grid">
+      <div class="fg"><label>Puissance max</label>
+        <select id="tPow">
+          <option value="10">10¹</option><option value="100">10²</option>
+          <option value="1000">10³</option><option value="10000" selected>10⁴</option>
+          <option value="100000">10⁵</option><option value="1000000">10⁶</option>
+        </select></div>
+      <div class="fg"><label>Décimales</label>
+        <select id="tDec"><option value="0">Non</option><option value="1">Oui</option></select></div>
+      <div class="fg"><label>Objectif (exercices)</label>
+        <input type="number" id="tGoal" value="10" min="3" max="30"></div>
+    </div>
+    <div class="sci-note"><strong>Quiterio (2023, RISS)</strong> — le boulier/abaque crée des automatismes de manipulation mentale en passant par la manipulation physique/visuelle (dyscalculie).</div>
+    <div class="sci-note"><strong>de Vittori (2020, RISS)</strong> — les faits numériques (dont les compléments) s'automatisent par la manipulation visuelle avant le calcul mental. Le codage couleur par rang réduit la charge extrinsèque.</div>
+    <div class="sci-note"><strong>Loretan, Weiss &amp; Müller (2018, RISS)</strong> — opérations avec puissances de 10 : compétences techniques difficiles à automatiser sans ancrage visuel positionnel.</div>
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-top:6px;padding:8px;background:#faf5ff;border-radius:8px;border:1px solid #e9d5ff">
+      <label class="ctrl-toggle" style="white-space:nowrap;flex-shrink:0">
+        <input type="checkbox" id="tExample"> Afficher exemple résolu
+      </label>
+      <div class="sci-note" style="margin:0;font-size:.72rem"><strong>Oesinger (2020, RISS)</strong> — L'explicitation du raisonnement rang par rang réduit la charge extrinsèque et libère la mémoire de travail. <strong>Millon Faure &amp; Gombert (2021, RISS)</strong> — Pour les élèves dyscalculiques, visualiser l'algorithme positionnel colonne par colonne est un étayage essentiel avant l'automatisation.</div>
+    </div>
+    <div class="t-btns">
+      <button class="btn-gen" onclick="applyTeacher()">▶ Appliquer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- LEFT : énoncé seul, grand et lisible -->
+  <div class="left">
+    <div class="controls">
+      <span class="ctrl-label">Puissance :</span>
+      <select class="ctrl-sel" id="powerSelect">
+        <option value="10">10¹</option><option value="100">10²</option>
+        <option value="1000">10³</option><option value="10000" selected>10⁴</option>
+        <option value="100000">10⁵</option><option value="1000000">10⁶</option>
+      </select>
+      <label class="ctrl-toggle"><input type="checkbox" id="decimalCheckbox"> Décimales</label>
+      <button class="btn-new" onclick="generer()">🎲 Nouveau</button>
+    </div>
+    <div class="enonce-box" id="enonceBox">
+      <div class="q-label">Quel est le complément pour atteindre :</div>
+      <div class="q-target" id="qTarget">—</div>
+      <div class="q-number" id="qNumber">—</div>
+      <div class="ex-wrap" id="exWrap" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT : abaque + saisie -->
+  <div class="right">
+    <div class="score-bar">
+      <span>Score</span>
+      <span id="scoreNums">0 / 0</span>
+      <progress id="progressBar" value="0" max="10"></progress>
+      <span id="exNum">0/10</span>
+    </div>
+    <div class="abaque-wrap">
+      <div class="abaque-title">chiffre par rang → astuce complément ↓</div>
+      <div class="abaque" id="abaque"></div>
+    </div>
+    <div class="ans-box">
+      <div class="q-arrow">↓</div>
+      <div class="ans-display active" id="ansDisplay">_</div>
+      <div class="vkb" id="vkb"></div>
+      <div class="fb neutral" id="fb">Entre ta réponse.</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-ov" id="loginModal">
+  <div class="modal">
+    <h2>🔐 Accès Enseignant</h2>
+    <input type="email" id="lEmail" placeholder="Email">
+    <input type="password" id="lPwd" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="m-err" id="lErr"></div>
+    <div class="m-btns">
+      <button class="btn-cl" onclick="closeLogin()">Annuler</button>
+      <button class="btn-ok" onclick="doLogin()">Connexion</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const _sb=supabase.createClient('https://otiorljbujqzruulmqrs.supabase.co','sb_publishable_txhpqAZpx_Yth8zFQ3J0QQ_f9QVU0nE');
+
+function rangColor(exp){
+  if(exp<0){const d=['--cm1','--cm2','--cm3'];return`var(${d[Math.min(-exp-1,d.length-1)]})`;}
+  const c=['--c0','--c1','--c2','--c3','--c4','--c5'];return`var(${c[Math.min(exp,c.length-1)]})`;
+}
+
+let nombre,complement,puissance,score=0,total=0,goal=10,answered=false,ansVal='';
+
+function expOf(p){return Math.round(Math.log10(p));}
+
+function generer(){
+  const dec=document.getElementById('decimalCheckbox').checked;
+  puissance=parseInt(document.getElementById('powerSelect').value);
+  const max=puissance-(dec?0.001:1);
+  nombre=dec?Math.floor(Math.random()*(max*1000))/1000:Math.floor(Math.random()*(max-1))+1;
+  complement=Math.round((puissance-nombre)*1000)/1000;
+  ansVal=''; answered=false;
+  const exp=expOf(puissance);
+  document.getElementById('qTarget').innerHTML=
+    `<span>${puissance.toLocaleString('fr-BE')}</span>&nbsp;&nbsp;(= 10<sup>${exp}</sup>)`;
+  document.getElementById('qNumber').textContent=nombre.toLocaleString('fr-BE');
+  document.getElementById('ansDisplay').textContent='_';
+  document.getElementById('ansDisplay').classList.add('active');
+  setFb('neutral','Entre ta réponse.');
+  afficherAbaque(); buildKb();
+}
+
+function afficherAbaque(){
+  const ab=document.getElementById('abaque'); ab.innerHTML='';
+  const dec=document.getElementById('decimalCheckbox').checked;
+  const [ent,dcm]=nombre.toFixed(3).split('.');
+  const lon=Math.log10(puissance);
+  let last=-1;
+  if(dec){for(let i=dcm.length-1;i>=0;i--){if(dcm[i]!=='0'){last=i;break;}}}
+  ent.padStart(lon,'0').split('').forEach((c,i)=>{
+    const exp=lon-1-i,col=document.createElement('div');
+    col.className='col';
+    const target=(i===lon-1&&last===-1)?10:9;
+    col.innerHTML=`<div class="col-pow" style="color:${rangColor(exp)}">10<sup>${exp}</sup></div>
+      <div class="col-digit" style="background:${rangColor(exp)}">${c}</div>
+      <div class="col-op">+ ?</div>
+      <div class="col-target">= ${target}</div>`;
+    ab.appendChild(col);
+  });
+  if(dec){
+    const vd=document.createElement('div');
+    vd.className='virgule';vd.textContent=',';ab.appendChild(vd);
+    dcm.split('').forEach((c,i)=>{
+      const exp=-(i+1),col=document.createElement('div');
+      col.className='col';
+      const target=i===last?10:9;
+      col.innerHTML=`<div class="col-pow" style="color:${rangColor(exp)}">10<sup>${exp}</sup></div>
+        <div class="col-digit" style="background:${rangColor(exp)}">${c}</div>
+        <div class="col-op">+ ?</div>
+        <div class="col-target">= ${target}</div>`;
+      ab.appendChild(col);
+    });
+  }
+}
+
+const EXEMPLES={10:7,100:43,1000:258,10000:3257,100000:42583,1000000:325718};
+
+function afficherExemple(){
+  const wrap=document.getElementById('exWrap');
+  const box=document.getElementById('enonceBox');
+  const show=document.getElementById('tExample')&&document.getElementById('tExample').checked;
+  if(!show){wrap.style.display='none';box.classList.remove('with-ex');return;}
+  const p=parseInt(document.getElementById('powerSelect').value);
+  const ex=EXEMPLES[p]||3257;
+  const comp=p-ex;
+  const lon=Math.log10(p);
+  const digits=String(ex).padStart(lon,'0').split('');
+  let html=`<div class="ex-label">Exemple résolu :</div><div class="abaque">`;
+  digits.forEach((c,i)=>{
+    const exp=lon-1-i;
+    const isLast=i===lon-1;
+    const target=isLast?10:9;
+    const answer=target-parseInt(c);
+    html+=`<div class="col">
+      <div class="col-pow" style="color:${rangColor(exp)}">10<sup>${exp}</sup></div>
+      <div class="col-digit" style="background:${rangColor(exp)}">${c}</div>
+      <div class="col-answer">+ ${answer}</div>
+      <div class="col-target">= ${target}</div>
+    </div>`;
+  });
+  html+=`</div><div class="ex-result">complément = <span>${comp.toLocaleString('fr-BE')}</span></div>`;
+  wrap.innerHTML=html;
+  wrap.style.display='flex';
+  wrap.style.flexDirection='column';
+  wrap.style.alignItems='center';
+  box.classList.add('with-ex');
+}
+
+function buildKb(){
+  const kb=document.getElementById('vkb');kb.innerHTML='';
+  [['7','8','9','⌫'],['4','5','6',','],['1','2','3','0']].forEach(row=>row.forEach(k=>{
+    const b=document.createElement('button');
+    b.className='kb'+((k==='⌫'||k===',')?' sp':'');
+    b.textContent=k;b.onclick=()=>kp(k);kb.appendChild(b);
+  }));
+  const em=document.createElement('button');em.className='kb';em.style.visibility='hidden';kb.appendChild(em);
+  const ok=document.createElement('button');ok.className='kb ok';ok.textContent='✓ Valider';ok.onclick=verifier;kb.appendChild(ok);
+  const cl=document.createElement('button');cl.className='kb cl';cl.textContent='Effacer';cl.onclick=()=>{ansVal='';updateDisplay();};kb.appendChild(cl);
+}
+
+function kp(k){
+  if(answered)return;
+  if(k==='⌫')ansVal=ansVal.slice(0,-1);
+  else if(k===','){if(!ansVal.includes(','))ansVal+=',';}
+  else ansVal+=k;
+  updateDisplay();
+}
+function updateDisplay(){document.getElementById('ansDisplay').textContent=ansVal||'_';}
+
+function verifier(){
+  if(answered||!ansVal||ansVal===',')return;
+  const rep=parseFloat(ansVal.replace(',','.'));
+  const ok=Math.abs(rep-complement)<0.0001;
+  answered=true;total++;if(ok)score++;
+  setFb(ok?'ok':'ko',ok?'✅ Bravo !':`❌ Réponse : ${complement.toLocaleString('fr-BE')}`);
+  document.getElementById('ansDisplay').classList.remove('active');
+  updateScore();
+}
+
+function setFb(cls,txt){const e=document.getElementById('fb');e.className='fb '+cls;e.textContent=txt;}
+function updateScore(){
+  document.getElementById('scoreNums').textContent=`${score} / ${total}`;
+  document.getElementById('progressBar').value=total;
+  document.getElementById('progressBar').max=goal;
+  document.getElementById('exNum').textContent=`${total}/${goal}`;
+}
+
+function applyTeacher(){
+  document.getElementById('powerSelect').value=document.getElementById('tPow').value;
+  document.getElementById('decimalCheckbox').checked=document.getElementById('tDec').value==='1';
+  goal=parseInt(document.getElementById('tGoal').value)||10;
+  score=0;total=0;updateScore();generer();
+  afficherExemple();
+  document.getElementById('tPanel').classList.remove('open');
+}
+
+function openLogin(){document.getElementById('loginModal').classList.add('open');document.getElementById('lEmail').focus();}
+function closeLogin(){document.getElementById('loginModal').classList.remove('open');}
+async function doLogin(){
+  const e=document.getElementById('lEmail').value.trim(),p=document.getElementById('lPwd').value;
+  const err=document.getElementById('lErr');err.textContent='';
+  if(!e||!p){err.textContent='Email et mot de passe requis.';return;}
+  const{data,error}=await _sb.auth.signInWithPassword({email:e,password:p});
+  if(error){err.textContent='Identifiants incorrects.';return;}
+  closeLogin();document.getElementById('tPanel').classList.add('open');
+}
+async function doSignOut(){await _sb.auth.signOut();document.getElementById('tPanel').classList.remove('open');}
+
+generer();
+</script>
+</body>
+</html>
